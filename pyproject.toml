@@ -1,0 +1,42 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "saturday-tracker"
+version = "0.1.0"
+description = "Таск-трекер на CSV-файлах рядом с кодом: для человека и AI-агентов"
+readme = "README.md"
+requires-python = ">=3.11"
+license = { file = "LICENSE" }
+authors = [{ name = "Dgreat21" }]
+keywords = ["tracker", "issues", "csv", "git", "ai-agents", "local-first"]
+classifiers = [
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: Apache Software License",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Software Development :: Bug Tracking",
+]
+dependencies = []          # намеренно пусто: только стандартная библиотека
+
+[project.urls]
+Homepage = "https://github.com/Dgreat21/saturday-tracker"
+Issues = "https://github.com/Dgreat21/saturday-tracker/issues"
+
+[project.scripts]
+saturday-tracker = "saturday_tracker.tracker_ui:main"
+
+[tool.setuptools]
+packages = ["saturday_tracker"]
+
+[tool.setuptools.package-data]
+saturday_tracker = [
+    "static/*.html",
+    "static/*.js",
+    "sample_data/*.csv",
+    "sample_data/comments/*.md",
+]

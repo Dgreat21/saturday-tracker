@@ -1,0 +1,49 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  selftest:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python }}
+
+      - name: Самопроверка (с негативным контролем)
+        run: python -m saturday_tracker.tracker_selftest
+
+      - name: Установка пакета
+        run: pip install .
+
+      - name: Пакет работает автономно
+        # Из чистого каталога: демо-данные обязаны ехать внутри пакета,
+        # иначе установленный трекер стартует пустым.
+        run: |
+          mkdir -p /tmp/clean && cd /tmp/clean
+          python -c "
+          import saturday_tracker.tracker_store as s
+          assert s.TRACKER.exists(), f'нет каталога данных: {s.TRACKER}'
+          n = len(s.load_tickets())
+          assert n > 0, 'демо-данные не попали в пакет'
+          print(f'тикетов из поставки: {n}')
+          "
+
+      - name: Сервер отвечает
+        run: |
+          cd /tmp/clean
+          saturday-tracker --port 8799 &
+          for i in $(seq 1 20); do
+            curl -sf -o /dev/null http://127.0.0.1:8799/ && break || sleep 0.5
+          done
+          curl -sf -o /dev/null -w 'главная: %{http_code}\n' http://127.0.0.1:8799/
+          curl -sf -o /dev/null -w 'карточка: %{http_code}\n' http://127.0.0.1:8799/t/DEMO-2
+          curl -sf http://127.0.0.1:8799/data/tasks.csv | head -1
